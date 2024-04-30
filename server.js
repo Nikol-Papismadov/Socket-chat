@@ -54,6 +54,7 @@ io.on("connection", (socket) => {
             recipientSocket.emit("privateMessage", { senderUsername, message });
         }
     });
+    debugger
     socket.on("getAllUsers", () => {
         const usersList = Object.values(users);
         socket.emit("allUsers", usersList);
@@ -62,9 +63,9 @@ io.on("connection", (socket) => {
     });
 });
 
-app.get("/", (req, res) => {
-    res.send("Welcome to our app");
-});
+// app.get("/", (req, res) => {
+//     res.send("Welcome to our app");
+// });
 
 server.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);
