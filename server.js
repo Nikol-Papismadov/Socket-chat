@@ -29,6 +29,7 @@ const io = new socketIO(server, {
 app.use(express.static(path.join(__diename, "public")));
 
 const activeUsers = {};
+const offlineUsers = {};
 // let users = [];
 io.on("connection", (socket) => {
     socket.on("join", (username,accessToken,refreshToken) => {
@@ -42,7 +43,9 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         const username = activeUsers[socket.id];
         delete activeUsers[socket.id];
+        offlineUsers[socket.id] = username;
         io.emit("activeUsers", Object.values(activeUsers));
+        io.emit("offlineUsers", Object.values(offlineUsers));
 
         socket.broadcast.emit("userLeft", { username, userId: socket.id }); // Include username here
         console.log(`SERVER:${username} left the chat`);
