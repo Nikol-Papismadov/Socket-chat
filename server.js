@@ -76,9 +76,9 @@ app.get("/", (req, res) => {
     res.send("Welcome to our app");
 });
 
-// app.get("/online-users", (req, res) => {
-//     res.json(Object.values(activeUsers));
-// });
+app.get("/online-users", (req, res) => {
+    res.json(Object.values(activeUsers));
+});
 
 server.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);
