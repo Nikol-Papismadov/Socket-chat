@@ -27,23 +27,22 @@ const io = new socketIO(server, {
 });
 
 app.use(express.static(path.join(__diename, "public")));
-
 const activeUsers = {};
 const offlineUsers = {};
-// let users = [];
 io.on("connection", (socket) => {
     socket.on("join", (username,accessToken,refreshToken) => {
         activeUsers[socket.id] = username;
         io.emit("activeUsers", Object.values(activeUsers));
+        io.emit("offlineUsers", Object.values(offlineUsers));
         // users.push({ id: socket.id, username:username, accessToken:accessToken, refreshToken:refreshToken  });
         socket.broadcast.emit("userJoined", { userId: socket.id,username,accessToken:accessToken, refreshToken:refreshToken });
         console.log(`server:${username} Joined the chat`);
         
     });
     socket.on("disconnect", () => {
+        
         const username = activeUsers[socket.id];
         delete activeUsers[socket.id];
-        offlineUsers[socket.id] = username;
         io.emit("activeUsers", Object.values(activeUsers));
         io.emit("offlineUsers", Object.values(offlineUsers));
 
