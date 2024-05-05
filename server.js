@@ -13,7 +13,6 @@ const __diename = dirname(__filename);
 
 const app = express();
 app.use(cors());
-
 const server = http.createServer(app);
 
 const io = new socketIO(server, {
@@ -30,53 +29,28 @@ app.use(express.static(path.join(__diename, "public")));
 const activeUsers = {};
 const offlineUsers = {};
 io.on("connection", (socket) => {
-    socket.on("join", (username,accessToken,refreshToken) => {
-        activeUsers[socket.id] = username;
+    socket.on("join", (username, accessToken, refreshToken) => {
+        activeUsers[socket.id] = { username: username,accessToken: accessToken,refreshToken: refreshToken };
         io.emit("activeUsers", Object.values(activeUsers));
         io.emit("offlineUsers", Object.values(offlineUsers));
-        // users.push({ id: socket.id, username:username, accessToken:accessToken, refreshToken:refreshToken  });
-        socket.broadcast.emit("userJoined", { userId: socket.id,username,accessToken:accessToken, refreshToken:refreshToken });
-        console.log(`server:${username} Joined the chat`);
-        
+        socket.broadcast.emit("userJoined", { username });
+        console.log(`User ${username} joined the chat`);
     });
     socket.on("disconnect", () => {
         
-        const username = activeUsers[socket.id];
+        const { username, accessToken, refreshToken } = activeUsers[socket.id];
         delete activeUsers[socket.id];
         io.emit("activeUsers", Object.values(activeUsers));
         io.emit("offlineUsers", Object.values(offlineUsers));
-
-        socket.broadcast.emit("userLeft", { username, userId: socket.id }); // Include username here
-        console.log(`SERVER:${username} left the chat`);
+        socket.broadcast.emit("userLeft", { username });
+        console.log(`User ${username} left the chat`);
     });
-    
+
     socket.on("ChatMessage", (message) => {
         const username = activeUsers[socket.id];
         io.emit("message", { username, message });
         console.log(`${username}: ${message}`);
     });
-    // socket.on("privateMessage", ({ recipientId, message }) => {
-    //     const senderUsername = users[socket.id];
-    //     const recipientSocket = io.sockets.sockets.get(recipientId);
-    //     if (recipientSocket) {
-    //         recipientSocket.emit("privateMessage", { senderUsername, message });
-    //     }
-    // });
-    
-    // socket.on("getAllUsers", () => {
-    //     const usersList = Object.values(users);
-    //     socket.emit("allUsers", usersList);
-    //     const message = `List of all users: ${usersList.join(", ")}`;
-    //     socket.emit("PrivateMessage", { senderUsername: "SERVER", message });
-    // });
-});
-
-app.get("/", (req, res) => {
-    res.send("Welcome to our app");
-});
-
-app.get("/online-users", (req, res) => {
-    res.json(Object.values(activeUsers));
 });
 
 server.listen(PORT, () => {
