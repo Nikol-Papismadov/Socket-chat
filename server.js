@@ -28,19 +28,18 @@ const io = new socketIO(server, {
 
 app.use(express.static(path.join(__diename, "public")));
 const activeUsers = {};
+debugger
 const offlineUsers = {};
 io.on("connection", (socket) => {
     socket.on("join", (username,accessToken,refreshToken) => {
         activeUsers[socket.id] = username;
         io.emit("activeUsers", Object.values(activeUsers));
         io.emit("offlineUsers", Object.values(offlineUsers));
-        // users.push({ id: socket.id, username:username, accessToken:accessToken, refreshToken:refreshToken  });
         socket.broadcast.emit("userJoined", { userId: socket.id,username,accessToken:accessToken, refreshToken:refreshToken });
         console.log(`server:${username} Joined the chat`);
         
     });
     socket.on("disconnect", () => {
-        
         const username = activeUsers[socket.id];
         delete activeUsers[socket.id];
         io.emit("activeUsers", Object.values(activeUsers));
@@ -55,20 +54,7 @@ io.on("connection", (socket) => {
         io.emit("message", { username, message });
         console.log(`${username}: ${message}`);
     });
-    // socket.on("privateMessage", ({ recipientId, message }) => {
-    //     const senderUsername = users[socket.id];
-    //     const recipientSocket = io.sockets.sockets.get(recipientId);
-    //     if (recipientSocket) {
-    //         recipientSocket.emit("privateMessage", { senderUsername, message });
-    //     }
-    // });
     
-    // socket.on("getAllUsers", () => {
-    //     const usersList = Object.values(users);
-    //     socket.emit("allUsers", usersList);
-    //     const message = `List of all users: ${usersList.join(", ")}`;
-    //     socket.emit("PrivateMessage", { senderUsername: "SERVER", message });
-    // });
 });
 
 app.get("/", (req, res) => {
